@@ -1,0 +1,25 @@
+const
+  q = 1;
+  w = true;
+  e = 123;
+let
+  a, b, c, d: boolean;
+begin
+a = 1 == w;
+a = a == 0;
+a = !w;
+if (!a) begin
+a = false;
+b = true;
+c = false;
+  if (!1) begin
+    d = false;
+  end else begin
+    d = true
+  end
+end else begin
+a = true;
+b = false;
+c = true;
+end;
+end
