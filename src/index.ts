@@ -21,6 +21,7 @@ fs.readFile(path.resolve(__dirname, '..', 'public', 'program.txt'), 'utf8', (err
 
         const executor = new Executor(tools)
         executor.run(mainNode)
+        console.log(mainNode)
         console.log(tools.variables, tools.constants)
     } catch (e) {
         console.error(e)

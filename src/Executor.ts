@@ -12,6 +12,8 @@ import Tools from './Tools';
 import IfElseNode from './AST/IfElseNode';
 import ConstantNode from './AST/ConstantNode';
 import WhileNode from './AST/WhileNode';
+import DoWhileNode from './AST/DoWhileNode';
+import ForNode from './AST/ForNode';
 
 
 export default class Executor {
@@ -26,6 +28,27 @@ export default class Executor {
             node.body.forEach(expression => {
                 this.run(expression)
             })
+            return
+        }
+        if (node instanceof ForNode) {
+            for (;
+                node.conditions instanceof Node
+                    ? this.run(node.conditions)
+                    : true
+                ; node.final instanceof ExpressionNode
+                    ? this.run(node.final)
+                    : undefined
+            ) {
+                this.run(node.body)
+            }
+            return
+        }
+        if (node instanceof DoWhileNode) {
+            let conditionResult
+            do {
+                this.run(node.body)
+                conditionResult = this.run(node.conditions)
+            } while (conditionResult)
             return
         }
         if (node instanceof WhileNode) {

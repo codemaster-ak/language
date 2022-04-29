@@ -14,6 +14,8 @@ import {VariableType} from './VariableType';
 import IfElseNode from './AST/IfElseNode';
 import ConstantNode from './AST/ConstantNode';
 import WhileNode from './AST/WhileNode';
+import DoWhileNode from './AST/DoWhileNode';
+import ForNode from './AST/ForNode';
 
 export default class Parser {
     readonly tools: Tools
@@ -76,9 +78,8 @@ export default class Parser {
             const variable = this.tools.findVariable(variableName.text)
             if (variable) return variable
             const constant = this.tools.findConstant(variableName.text)
-            if (constant) {
-                return constant
-            } else throw new Error(`Переменная ${variableName.text} не инициализирована`)
+            if (constant) return constant
+            else throw new Error(`Переменная ${variableName.text} не инициализирована`)
         }
         throw new Error(`Ожидается переменная или значение на позиции ${this.pos}`)
     }
@@ -282,6 +283,10 @@ export default class Parser {
                 body.push(this.parseIfElse())
             } else if (this.match(tokenTypesList.while)) {
                 body.push(this.parseWhile())
+            } else if (this.match(tokenTypesList.do)) {
+                body.push(this.parseDoWhile())
+            } else if (this.match(tokenTypesList.for)) {
+                body.push(this.parseFor())
             } else if (this.match(tokenTypesList.end)) {
                 this.pos--
                 break
@@ -307,6 +312,48 @@ export default class Parser {
             return new IfElseNode(conditions, body, alter)
         }
         return new IfElseNode(conditions, body)
+    }
+
+    parseDoWhile(): WhileNode {
+        const body = this.parseBlock()
+        this.require(tokenTypesList.while)
+        this.require(tokenTypesList.leftParenthese)
+        const conditions = this.parseOperation()
+        this.require(tokenTypesList.rightParenthese)
+        return new DoWhileNode(conditions, body)
+    }
+
+    parseInitialization(): VariableNode | null {
+        if (this.match(tokenTypesList.let)) {
+            const variable = new VariableNode(this.require(tokenTypesList.variableName))
+            this.require(tokenTypesList.assign)
+            const value = this.require(tokenTypesList.number, tokenTypesList.true, tokenTypesList.false)
+            if (value.type == tokenTypesList.number) {
+                variable.type = VariableType.number
+            }
+            if (value.type == tokenTypesList.true || value.type == tokenTypesList.false) {
+                variable.type = VariableType.boolean
+            }
+            return variable
+        }
+        return null
+    }
+
+    parseFor(): ForNode {
+        this.require(tokenTypesList.leftParenthese)
+        const initialization = this.parseInitialization()
+        if (initialization)    this.tools.variables.push(initialization)
+        this.require(tokenTypesList.semicolon)
+        const conditions = this.parseOperation()
+        this.require(tokenTypesList.semicolon)
+        const final = this.parseExpression()
+        this.require(tokenTypesList.rightParenthese)
+        const body = this.parseBlock()
+        const forNode = new ForNode(body, conditions, final)
+        if (initialization) {
+            forNode.scope.push(initialization)
+        }
+        return forNode
     }
 
     parseWhile(): WhileNode {
