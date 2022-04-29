@@ -14,6 +14,7 @@ export const tokenTypesList = {
     'begin': new TokenType('begin', 'begin'),
     'end': new TokenType('end', 'end'),
     'if': new TokenType('if', 'if'),
+    'while': new TokenType('while', 'while'),
     'else': new TokenType('else', 'else'),
     'booleanToken': new TokenType('booleanToken', 'boolean'),
     'numberToken': new TokenType('numberToken', 'number'),

@@ -24,10 +24,13 @@ export default class Tools {
     }
 
     findConstant(name: string): ConstantNode | undefined {
-        return this.constants.find(constant=> constant.token.text === name)
+        return this.constants.find(constant => constant.token.text === name)
     }
 
-    setVariablesType(type: VariableType): void {
-        this.variables.forEach(variable => variable.type = type)
+    setVariablesType(variables: VariableNode[], type: VariableType): void {
+        const variableNames = variables.map(vars => vars.token.text)
+        this.variables.forEach(variable => {
+            if (variableNames.includes(variable.token.text)) variable.type = type
+        })
     }
 }

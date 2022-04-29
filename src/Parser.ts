@@ -13,6 +13,7 @@ import Tools from './Tools';
 import {VariableType} from './VariableType';
 import IfElseNode from './AST/IfElseNode';
 import ConstantNode from './AST/ConstantNode';
+import WhileNode from './AST/WhileNode';
 
 export default class Parser {
     readonly tools: Tools
@@ -226,20 +227,33 @@ export default class Parser {
         else throw new Error(`Недопустимый токен на позиции ${this.pos}`)
     }
 
-    parseVariables(): void {
-        let variableName = this.require(tokenTypesList.variableName)
-        let variable = new VariableNode(variableName)
-        this.tools.variables.push(variable)
-        let comma = this.match(tokenTypesList.comma)
-        while (comma) {
-            variableName = this.require(tokenTypesList.variableName)
-            let variable = new VariableNode(variableName)
-            this.tools.variables.push(variable)
-            comma = this.match(tokenTypesList.comma)
+    parseAllVariables(): void {
+        let variableName = this.match(tokenTypesList.variableName, tokenTypesList.begin)
+        while (variableName?.type == tokenTypesList.variableName) {
+            this.pos--
+            const variables: VariableNode[] = this.parseVariables()
+            this.require(tokenTypesList.colon)
+            const type = this.parseVariablesType()
+            this.require(tokenTypesList.semicolon)
+            this.tools.setVariablesType(variables, type)
+            variableName = this.match(tokenTypesList.variableName, tokenTypesList.begin)
         }
+        if (variableName?.type == tokenTypesList.begin) this.pos--
     }
 
-    parseVariablesType(): void {
+    parseVariables(): VariableNode[] {
+        let variables: VariableNode[] = []
+        let comma: Token | null = new Token(tokenTypesList.comma, tokenTypesList.comma.name, this.pos)
+        while (comma) {
+            const variable = new VariableNode(this.require(tokenTypesList.variableName))
+            this.tools.variables.push(variable)
+            variables.push(variable)
+            comma = this.match(tokenTypesList.comma)
+        }
+        return variables
+    }
+
+    parseVariablesType(): VariableType {
         const typeToken = this.require(tokenTypesList.numberToken, tokenTypesList.stringToken, tokenTypesList.booleanToken)
         let type = VariableType.undefined
         switch (typeToken.type) {
@@ -253,7 +267,7 @@ export default class Parser {
                 type = VariableType.boolean
                 break
         }
-        this.tools.setVariablesType(type)
+        return type
     }
 
     parseBody(): Node[] {
@@ -266,6 +280,8 @@ export default class Parser {
                 if (expression) body.push(expression)
             } else if (this.match(tokenTypesList.if)) {
                 body.push(this.parseIfElse())
+            } else if (this.match(tokenTypesList.while)) {
+                body.push(this.parseWhile())
             } else if (this.match(tokenTypesList.end)) {
                 this.pos--
                 break
@@ -278,16 +294,12 @@ export default class Parser {
 
     parseDeclaration(): void {
         if (this.match(tokenTypesList.const)) this.parseConstants()
-        this.require(tokenTypesList.let)
-        this.parseVariables()
-        this.require(tokenTypesList.colon)
-        this.parseVariablesType()
-        this.require(tokenTypesList.semicolon)
+        if (this.match(tokenTypesList.let)) this.parseAllVariables()
     }
 
     parseIfElse(): IfElseNode {
         this.require(tokenTypesList.leftParenthese)
-        const conditions = this.parseLogical()
+        const conditions = this.parseOperation()
         this.require(tokenTypesList.rightParenthese)
         const body = this.parseBlock()
         if (this.match(tokenTypesList.else)) {
@@ -295,6 +307,14 @@ export default class Parser {
             return new IfElseNode(conditions, body, alter)
         }
         return new IfElseNode(conditions, body)
+    }
+
+    parseWhile(): WhileNode {
+        this.require(tokenTypesList.leftParenthese)
+        const conditions = this.parseOperation()
+        this.require(tokenTypesList.rightParenthese)
+        const body = this.parseBlock()
+        return new WhileNode(conditions, body)
     }
 
     parseBlock(): BlockNode {

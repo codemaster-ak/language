@@ -1,25 +1,36 @@
 const
-  q = 1;
-  w = true;
-  e = 123;
+    q = 1;
+    w = true;
+    e = 123;
 let
-  a, b, c, d: boolean;
+    a, b, c, d: boolean;
+    z, y, x: number;
 begin
-a = 1 == w;
-a = a == 0;
-a = !w;
-if (!a) begin
-a = false;
-b = true;
-c = false;
-  if (!1) begin
-    d = false;
-  end else begin
-    d = true
-  end
-end else begin
-a = true;
-b = false;
-c = true;
-end;
+    a = 1 == w;
+    a = a == 0;
+    a = !w;
+    z = e;
+    y = e;
+    x = q;
+    if (!a) begin
+        a = false;
+        b = true;
+        c = false;
+        if (!1) begin
+            d = false;
+        end else begin
+            d = true
+        end
+    end else begin
+        a = true;
+        b = false;
+        c = true;
+    end;
+    while (!a) begin
+        if (x < 1000) begin
+            x = x + 1;
+        end else begin
+            a = true
+        end;
+    end;
 end

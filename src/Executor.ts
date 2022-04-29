@@ -11,6 +11,7 @@ import UnaryOperationNode from './AST/UnaryOperationNode';
 import Tools from './Tools';
 import IfElseNode from './AST/IfElseNode';
 import ConstantNode from './AST/ConstantNode';
+import WhileNode from './AST/WhileNode';
 
 
 export default class Executor {
@@ -27,6 +28,14 @@ export default class Executor {
             })
             return
         }
+        if (node instanceof WhileNode) {
+            let conditionResult = this.run(node.conditions)
+            while (conditionResult) {
+                this.run(node.body)
+                conditionResult = this.run(node.conditions)
+            }
+            return
+        }
         if (node instanceof IfElseNode) {
             const conditionResult = this.run(node.conditions)
             if (conditionResult) this.run(node.body)
@@ -40,7 +49,6 @@ export default class Executor {
             const variable = this.tools.findVariable(node.variable.token.text)
             if (variable) {
                 if (typeof result === variable.type) {
-                    console.log(variable.token.text)
                     variable.value = result
                 } else throw new Error(`Ошибка присвоения ${variable.token.text} - несоответствие типов`)
             }

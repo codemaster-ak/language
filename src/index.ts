@@ -20,9 +20,8 @@ fs.readFile(path.resolve(__dirname, '..', 'public', 'program.txt'), 'utf8', (err
         const mainNode = parser.parseProgram()
 
         const executor = new Executor(tools)
-        // console.log(mainNode)
         executor.run(mainNode)
-        console.log(tools.variables)
+        console.log(tools.variables, tools.constants)
     } catch (e) {
         console.error(e)
     }
